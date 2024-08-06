@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ BasicAuth module
 """
+
 import base64
 from typing import Tuple, TypeVar
 from api.v1.auth.auth import Auth
@@ -13,7 +14,8 @@ class BasicAuth(Auth):
     """
 
     def extract_base64_authorization_header(
-            self, authorization_header: str) -> str:
+        self, authorization_header: str
+    ) -> str:
         """ Extracts the Base64 part of the Authorization header """
         if (authorization_header is None or
                 not isinstance(authorization_header, str)):
@@ -23,7 +25,8 @@ class BasicAuth(Auth):
         return authorization_header.split(' ', 1)[1]
 
     def decode_base64_authorization_header(
-            self, base64_authorization_header: str) -> str:
+        self, base64_authorization_header: str
+    ) -> str:
         """ Decodes the Base64 Authorization header """
         if (base64_authorization_header is None or
                 not isinstance(base64_authorization_header, str)):
@@ -35,17 +38,21 @@ class BasicAuth(Auth):
             return None
 
     def extract_user_credentials(
-            self, decoded_base64_authorization_header: str) -> Tuple[str, str]:
+        self, decoded_base64_authorization_header: str
+    ) -> Tuple[str, str]:
         """ Extracts user email and password from the decoded Base64 header """
         if (decoded_base64_authorization_header is None or
                 not isinstance(decoded_base64_authorization_header, str)):
             return None, None
         if ':' not in decoded_base64_authorization_header:
             return None, None
-        return tuple(decoded_base64_authorization_header.split(':', 1))
+        return tuple(
+            decoded_base64_authorization_header.split(':', 1)
+        )
 
     def user_object_from_credentials(
-            self, user_email: str, user_pwd: str) -> User:
+        self, user_email: str, user_pwd: str
+    ) -> User:
         """ Retrieves the User instance based on email and password """
         if (not isinstance(user_email, str) or
                 not isinstance(user_pwd, str)):
