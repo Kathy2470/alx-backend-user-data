@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """ Auth module
 """
+
 from typing import List, TypeVar
 from flask import request
 
 User = TypeVar('User')
+
 
 class Auth:
     """ Auth class
@@ -16,8 +18,21 @@ class Auth:
             return True
         if excluded_paths is None or len(excluded_paths) == 0:
             return True
+
         path = path if path.endswith('/') else path + '/'
-        return path not in (excluded_path if excluded_path.endswith('/') else excluded_path + '/' for excluded_path in excluded_paths)
+
+        for excluded_path in excluded_paths:
+            if excluded_path is None:
+                continue
+            excluded_path = (
+                excluded_path
+                if excluded_path.endswith('/')
+                else excluded_path + '/'
+            )
+            if path == excluded_path:
+                return False
+
+        return True
 
     def authorization_header(self, request=None) -> str:
         """ Returns the value of the Authorization header from the request """
