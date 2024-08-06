@@ -3,11 +3,9 @@
 """
 
 import base64
-from typing import Tuple, TypeVar
+from typing import Tuple
 from api.v1.auth.auth import Auth
 from models.user import User
-
-User = TypeVar('User')
 
 
 class BasicAuth(Auth):
@@ -58,7 +56,7 @@ class BasicAuth(Auth):
         if (user_email is None or not isinstance(user_email, str) or
                 user_pwd is None or not isinstance(user_pwd, str)):
             return None
-        user = User.search(user_email)
+        user = User.search(user_email)  # Correct usage of User class
         if user is None:
             return None
         if not user.is_valid_password(user_pwd):
