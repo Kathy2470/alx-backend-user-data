@@ -20,15 +20,15 @@ if auth_type == "auth":
 elif auth_type == "basic_auth":
     from api.v1.auth.basic_auth import BasicAuth
     auth = BasicAuth()
-
+elif auth_type == "session_auth":
+    from api.v1.auth.session_auth import SessionAuth
+    auth = SessionAuth()
 
 @app.before_request
 def before_request():
     """ Method to handle requests before they are processed """
     if auth is None:
         return
-
-    request.current_user = auth.current_user(request)
 
     if request.path not in [
         '/api/v1/status/',
@@ -41,6 +41,7 @@ def before_request():
             if auth.current_user(request) is None:
                 abort(403)
 
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    host = getenv("API_HOST", "0.0.0.0")
+    port = getenv("API_PORT", "5000")
+    app.run(host=host, port=int(port))
