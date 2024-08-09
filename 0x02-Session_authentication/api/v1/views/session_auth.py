@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-"""
-Session Authentication view routes.
+""" Session Authentication view routes.
 """
 
 from flask import Blueprint, request, jsonify, abort
-from api.v1.auth.session_auth import SessionAuth
 from models.user import User
 import os
 
@@ -30,7 +28,9 @@ def login():
     if not user.is_valid_password(password):
         return jsonify({"error": "wrong password"}), 401
 
-    session_id = auth.create_session(user.id)
+    # Import SessionAuth here to avoid circular import issues
+    from api.v1.app import auth as app_auth
+    session_id = app_auth.create_session(user.id)
     if session_id is None:
         return jsonify({"error": "session creation failed"}), 500
 
@@ -43,6 +43,8 @@ def logout():
     """
     Handle user logout and destroy session.
     """
-    if not auth.destroy_session(request):
+    # Import SessionAuth here to avoid circular import issues
+    from api.v1.app import auth as app_auth
+    if not app_auth.destroy_session(request):
         abort(404)
     return jsonify({})

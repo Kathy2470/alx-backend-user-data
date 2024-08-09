@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
+""" API v1 views initialization
 """
-API routes initialization.
-"""
+from flask import Blueprint
 
-from flask import Flask
+# Importing the blueprint for session_auth
 from api.v1.views.session_auth import auth as session_auth
 
-def create_app():
-    """
-    Create and configure the Flask application.
-    """
-    app = Flask(__name__)
-    app.register_blueprint(session_auth)
+# Initialize Blueprint
+v1 = Blueprint('v1', __name__, url_prefix='/api/v1')
 
-    return app
+# Register blueprints
+v1.register_blueprint(session_auth)
