@@ -8,6 +8,7 @@ import os  # Import the os module
 
 User = TypeVar('User')
 
+
 class Auth:
     """ Auth class
     """
