@@ -3,11 +3,14 @@
 Users view module
 """
 
-from api.v1.app import app
+from flask import Blueprint, jsonify, request, abort
 from models.user import User
 from api.v1.auth import auth
 
+users_bp = Blueprint('users', __name__)
 
+
+@users_bp.route('', methods=['GET'])
 def get_users():
     """
     Get all users
@@ -16,6 +19,7 @@ def get_users():
     return jsonify([user.to_dict() for user in users])
 
 
+@users_bp.route('/<user_id>', methods=['GET'])
 def get_user(user_id):
     """
     Get a user
@@ -30,6 +34,7 @@ def get_user(user_id):
     return jsonify(user.to_dict())
 
 
+@users_bp.route('', methods=['POST'])
 def create_user():
     """
     Create a user
@@ -38,6 +43,7 @@ def create_user():
     return jsonify(user.to_dict()), 201
 
 
+@users_bp.route('/<user_id>', methods=['PUT'])
 def update_user(user_id):
     """
     Update a user
@@ -49,6 +55,7 @@ def update_user(user_id):
     return jsonify(user.to_dict())
 
 
+@users_bp.route('/<user_id>', methods=['DELETE'])
 def delete_user(user_id):
     """
     Delete a user
