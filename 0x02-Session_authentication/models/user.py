@@ -1,59 +1,52 @@
 #!/usr/bin/env python3
-""" User module
+""" User model module
 """
-import hashlib
-from models.base import Base
+from sqlalchemy import Column, String
+from sqlalchemy.ext.declarative import declarative_base
 
+Base = declarative_base()
 
 class User(Base):
-    """ User class
-    """
+    """User class"""
+    __tablename__ = 'users'
+    id = Column(String(60), primary_key=True)
+    email = Column(String(60), nullable=False)
+    password = Column(String(60), nullable=False)
+    first_name = Column(String(60), nullable=True)
+    last_name = Column(String(60), nullable=True)
 
-    def __init__(self, *args: list, **kwargs: dict):
-        """ Initialize a User instance
-        """
-        super().__init__(*args, **kwargs)
-        self.email = kwargs.get('email')
-        self._password = kwargs.get('_password')
-        self.first_name = kwargs.get('first_name')
-        self.last_name = kwargs.get('last_name')
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            'email': self.email,
+            'first_name': self.first_name,
+            'id': self.id,
+            'last_name': self.last_name
+        }
 
-    @property
-    def password(self) -> str:
-        """ Getter of the password
-        """
-        return self._password
+    @classmethod
+    def create(cls, data):
+        """Create a new user"""
+        new_user = cls(**data)
+        new_user.save()
+        return new_user
 
-    @password.setter
-    def password(self, pwd: str):
-        """ Setter of a new password: encrypt in SHA256
-        """
-        if pwd is None or type(pwd) is not str:
-            self._password = None
-        else:
-            self._password = hashlib.sha256(pwd.encode()).hexdigest().lower()
+    def update(self, data):
+        """Update a user"""
+        for key, value in data.items():
+            setattr(self, key, value)
+        self.save()
 
-    def is_valid_password(self, pwd: str) -> bool:
-        """ Validate a password
-        """
-        if pwd is None or type(pwd) is not str:
-            return False
-        if self.password is None:
-            return False
-        pwd_e = pwd.encode()
-        return hashlib.sha256(pwd_e).hexdigest().lower() == self.password
+    def delete(self):
+        """Delete a user"""
+        self.delete()
 
-    def display_name(self) -> str:
-        """ Display User name based on email/first_name/last_name
-        """
-        if self.email is None and self.first_name is None \
-                and self.last_name is None:
-            return ""
-        if self.first_name is None and self.last_name is None:
-            return "{}".format(self.email)
-        if self.last_name is None:
-            return "{}".format(self.first_name)
-        if self.first_name is None:
-            return "{}".format(self.last_name)
-        else:
-            return "{} {}".format(self.first_name, self.last_name)
+    @classmethod
+    def get(cls, user_id):
+        """Get a user by ID"""
+        return cls.query.get(user_id)
+
+    @classmethod
+    def all(cls):
+        """Get all users"""
+        return cls.query.all()
