@@ -5,7 +5,9 @@ App module
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from api.v1.views.users import get_users, get_user, create_user, update_user, delete_user
+from api.v1.views.users import (
+    get_users, get_user, create_user, update_user, delete_user
+)
 from api.v1.auth import auth
 
 app = Flask(__name__)
@@ -44,12 +46,27 @@ def status():
     return jsonify({"status": "OK"})
 
 
-app.add_url_rule('/api/v1/users', view_func=get_users, methods=['GET'], strict_slashes=False)
-app.add_url_rule('/api/v1/users', view_func=create_user, methods=['POST'], strict_slashes=False)
-app.add_url_rule('/api/v1/users/<user_id>', view_func=get_user, methods=['GET'], strict_slashes=False)
-app.add_url_rule('/api/v1/users/<user_id>', view_func=update_user, methods=['PUT'], strict_slashes=False)
-app.add_url_rule('/api/v1/users/<user_id>', view_func=delete_user, methods=['DELETE'], strict_slashes=False)
+app.add_url_rule(
+    '/api/v1/users', view_func=get_users, methods=['GET'],
+    strict_slashes=False
+)
+app.add_url_rule(
+    '/api/v1/users', view_func=create_user, methods=['POST'],
+    strict_slashes=False
+)
+app.add_url_rule(
+    '/api/v1/users/<user_id>', view_func=get_user, methods=['GET'],
+    strict_slashes=False
+)
+app.add_url_rule(
+    '/api/v1/users/<user_id>', view_func=update_user, methods=['PUT'],
+    strict_slashes=False
+)
+app.add_url_rule(
+    '/api/v1/users/<user_id>', view_func=delete_user, methods=['DELETE'],
+    strict_slashes=False
+)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="5000")
+    app.run(host="0.0.0.0", port="5000", debug=True)
