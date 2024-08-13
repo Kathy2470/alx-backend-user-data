@@ -1,53 +1,65 @@
 #!/usr/bin/env python3
-"""
-App module
+""" Route module for the API
 """
 
-from flask import Flask, jsonify, request
+from os import getenv
+from api.v1.views import app_views
+from flask import Flask, jsonify, abort, request
 from flask_cors import CORS
-from api.v1.views.users import users_bp
-from api.v1.auth import auth
-
 
 app = Flask(__name__)
-CORS(app, origins='*')
+app.register_blueprint(app_views)
+CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
+
+auth = None  # Initialize auth to None
+
+auth_type = getenv("AUTH_TYPE")
+if auth_type == "auth":
+    from api.v1.auth.auth import Auth
+    auth = Auth()
+elif auth_type == "basic_auth":
+    from api.v1.auth.basic_auth import BasicAuth
+    auth = BasicAuth()
 
 
 @app.before_request
 def before_request():
-    """
-    Before request function
-    """
-    request.current_user = auth.current_user(request)
+    """Assign the result of auth.current_user(request) to request.current_user."""
+    if auth is None:
+        return
+
+    if request.path not in [
+        '/api/v1/status/',
+        '/api/v1/unauthorized/',
+        '/api/v1/forbidden/'
+    ]:
+        if auth.require_auth(request.path, []):
+            if auth.authorization_header(request) is None:
+                abort(401)
+            request.current_user = auth.current_user(request)
+            if request.current_user is None:
+                abort(403)
 
 
 @app.errorhandler(404)
-def not_found(error):
-    """
-    Error 404 handler
-    """
+def not_found(error) -> str:
+    """Not found handler."""
     return jsonify({"error": "Not found"}), 404
 
 
 @app.errorhandler(401)
-def unauthorized(error):
-    """
-    Error 401 handler
-    """
+def unauthorized(error) -> str:
+    """Unauthorized handler."""
     return jsonify({"error": "Unauthorized"}), 401
 
 
-@app.route('/api/v1/status', methods=['GET'], strict_slashes=False)
-def status():
-    """
-    Status route
-    """
-    return jsonify({"status": "OK"})
-
-
-# Register the Blueprint
-app.register_blueprint(users_bp, url_prefix='/api/v1/users')
+@app.errorhandler(403)
+def forbidden(error) -> str:
+    """Forbidden handler."""
+    return jsonify({"error": "Forbidden"}), 403
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    host = getenv("API_HOST", "0.0.0.0")
+    port = getenv("API_PORT", "5000")
+    app.run(host=host, port=port
