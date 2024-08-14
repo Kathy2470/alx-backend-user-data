@@ -6,6 +6,12 @@ Auth module
 from db import DB
 from bcrypt import hashpw, gensalt, checkpw
 from sqlalchemy.exc import NoResultFound
+import uuid
+
+class User:
+    def __init__(self, email: str, hashed_password: bytes):
+        self.email = email
+        self.hashed_password = hashed_password
 
 
 class Auth:
@@ -25,6 +31,14 @@ class Auth:
             bytes: The hashed password.
         """
         return hashpw(password.encode('utf-8'), gensalt())
+
+    def _generate_uuid(self) -> str:
+        """Generates a new UUID.
+
+        Returns:
+            str: The string representation of the UUID.
+        """
+        return str(uuid.uuid4())
 
     def register_user(self, email: str, password: str) -> User:
         """Registers a new user with email and password.
