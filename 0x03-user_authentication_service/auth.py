@@ -2,50 +2,62 @@
 """
 Auth module
 """
+
 from db import DB
-from user import User
-from sqlalchemy.orm.exc import NoResultFound  # Correct import for NoResultFound
-from typing import Optional
-import bcrypt
+from bcrypt import hashpw, gensalt, checkpw
+from sqlalchemy.exc import NoResultFound
 
 
 class Auth:
-    """Auth class to interact with the authentication database.
-    """
+    """Auth class to interact with the authentication database."""
 
     def __init__(self):
+        """Initialize Auth instance."""
         self._db = DB()
 
     def _hash_password(self, password: str) -> bytes:
-        """Hashes a password with a salt using bcrypt.
+        """Hashes a password using bcrypt.
 
         Args:
             password (str): The password to hash.
 
         Returns:
-            bytes: The salted hash of the password.
+            bytes: The hashed password.
         """
-        salt = bcrypt.gensalt()
-        return bcrypt.hashpw(password.encode(), salt)
+        return hashpw(password.encode('utf-8'), gensalt())
 
     def register_user(self, email: str, password: str) -> User:
-        """Registers a new user if the email isn't already registered.
+        """Registers a new user with email and password.
 
         Args:
-            email (str): The email of the user to register.
+            email (str): The user's email.
             password (str): The user's password.
 
         Returns:
-            User: The newly created User object.
+            User: The registered user.
 
         Raises:
-            ValueError: If the email is already registered.
+            ValueError: If the user already exists.
         """
         try:
             self._db.find_user_by(email=email)
             raise ValueError(f"User {email} already exists")
         except NoResultFound:
-            # User does not exist, so we can create a new one
             hashed_password = self._hash_password(password)
-            user = self._db.add_user(email, hashed_password)
-            return user
+            return self._db.add_user(email, hashed_password)
+
+    def valid_login(self, email: str, password: str) -> bool:
+        """Validates a user's login credentials.
+
+        Args:
+            email (str): The user's email.
+            password (str): The user's password.
+
+        Returns:
+            bool: True if the login is valid, False otherwise.
+        """
+        try:
+            user = self._db.find_user_by(email=email)
+            return checkpw(password.encode('utf-8'), user.hashed_password)
+        except NoResultFound:
+            return False
