@@ -1,37 +1,41 @@
 #!/usr/bin/env python3
 """
-Flask app module
+Flask app for user registration.
 """
 
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify
 from auth import Auth
+from sqlalchemy.exc import IntegrityError
+
 
 app = Flask(__name__)
+
+# Instantiate the Auth object
 AUTH = Auth()
 
 
 @app.route("/", methods=["GET"])
 def home():
-    """Returns a JSON payload with a welcome message.
-    """
-    return jsonify(message="Bienvenue")
+    """Handle GET requests at the root endpoint."""
+    return jsonify({"message": "Bienvenue"})
 
 
 @app.route("/users", methods=["POST"])
-def register_user():
-    """Registers a new user with the provided email and password.
-    """
+def users():
+    """Handle POST requests to register a user."""
     email = request.form.get("email")
     password = request.form.get("password")
-    
+
     if not email or not password:
-        return jsonify(message="email and password are required"), 400
+        return jsonify({"message": "email and password are required"}), 400
 
     try:
+        # Attempt to register the user
         user = AUTH.register_user(email, password)
-        return jsonify(email=user.email, message="user created")
+        return jsonify({"email": user.email, "message": "user created"}), 201
     except ValueError as e:
-        return jsonify(message=str(e)), 400
+        # Handle user already exists error
+        return jsonify({"message": str(e)}), 400
 
 
 if __name__ == "__main__":
